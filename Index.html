@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Controle Financeiro</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png" type="image/png">
+</head>
+<body>
+<button class="dark-toggle" onclick="alternarModo()">Modo Noturno</button>
+
+<h1>Meu Finaniro </h1>
+
+<!-- ATALHOS RÁPIDOS -->
+<section id="atalhosImpostos">
+  <button onclick="window.open('https://www.nfse.gov.br/EmissorNacional/Login?ReturnUrl=%2fEmissorNacional', '_blank')">NF-Eletronifca</button>
+  <button onclick="window.open('https://www.regularize.pgfn.gov.br/home', '_blank')">Regularize PGFN</button>
+  <button onclick="window.open('https://www.gov.br/pt-br', '_blank')">Portal do Governo</button>
+  <button onclick="window.open('https://www8.receita.fazenda.gov.br/SimplesNacional/aplicacoes.aspx?id=19')">Simples Nacional</button>
+</section>
+
+<!-- SALDOS -->
+<section>
+  <h2>Saldos</h2>
+  <div id="saldosContainer">
+    <div class="saldo-box">
+      <h4>Conta Principal</h4>
+      <span id="saldoContaPrincipal">R$ 0,00</span>
+    </div>
+    <div class="saldo-box">
+      <h4>Investimentos</h4>
+      <span id="saldoInvestimentos">R$ 0,00</span>
+    </div>
+    <div class="saldo-box">
+      <h4>Total nos Bancos</h4>
+      <span id="saldoTotal">R$ 0,00</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- MENU DE ABAS -->
+<nav>
+  <button onclick="mostrarAba('abaBancos')">Bancos</button>
+  <button onclick="mostrarAba('abaMovimentacoes')">Movimentações</button>
+  <button onclick="mostrarAba('abaInvestimentos')">Investimentos</button>
+  <button onclick="mostrarAba('abaEmprestimos')">Empréstimos</button> <!-- ADICIONADO -->
+  <button onclick="mostrarAba('abaImpostos')">Impostos</button>
+</nav>
+
+<!-- ABA BANCOS -->
+<div id="abaBancos" class="aba">
+  <h2>Cadastrar Banco</h2>
+  <label for="bancoNome">Nome do Banco:</label>
+  <input type="text" id="bancoNome">
+  <label for="saldoInicial">Saldo Inicial:</label>
+  <input type="number" id="saldoInicial">
+  <label>
+    <input type="checkbox" id="principal"> Definir como conta principal
+  </label>
+  <button onclick="cadastrarBanco()">Cadastrar Banco</button>
+  <ul id="saldos"></ul>
+</div>
+
+<!-- ABA MOVIMENTAÇÕES -->
+<div id="abaMovimentacoes" class="aba" style="display: none;">
+  <h2>Lançar Movimentação</h2>
+  <label for="data">Data:</label>
+  <input type="date" id="data">
+  <label for="descricao">Descrição:</label>
+  <input type="text" id="descricao">
+  <label for="valor">Valor:</label>
+  <input type="number" id="valor">
+  <label for="tipo">Tipo:</label>
+  <select id="tipo">
+    <option value="credito">Crédito</option>
+    <option value="debito">Débito</option>
+  </select>
+  <label for="bancoSelect">Banco:</label>
+  <select id="bancoSelect"></select>
+  <button onclick="lancarMovimentacao()">Lançar</button>
+
+  <h2>Histórico de Movimentações</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Descrição</th>
+        <th>Valor</th>
+        <th>Tipo</th>
+        <th>Banco</th>
+        <th>Ação</th>
+      </tr>
+    </thead>
+    <tbody id="historico"></tbody>
+  </table>
+</div>
+
+<!-- ABA INVESTIMENTOS -->
+<div id="abaInvestimentos" class="aba" style="display: none;">
+  <h2>Reserva Financeira</h2>
+  <label for="reservaInput">Valor da Reserva:</label>
+  <input type="number" id="reservaInput">
+  <button onclick="atualizarReserva()">Salvar</button>
+  <p>Reserva atual: R$ <span id="reservaValor">0,00</span></p>
+
+  <div>
+    <label for="dataReserva">Data:</label>
+    <input type="date" id="dataReserva">
+    <label for="descReserva">Descrição:</label>
+    <input type="text" id="descReserva">
+    <label for="valorReserva">Valor:</label>
+    <input type="number" id="valorReserva">
+    <label for="tipoReserva">Tipo:</label>
+    <select id="tipoReserva">
+      <option value="aporte">Aporte</option>
+      <option value="retirada">Retirada</option>
+    </select>
+    <button onclick="lancarReserva()">Lançar na Reserva</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Descrição</th>
+        <th>Valor</th>
+        <th>Tipo</th>
+      </tr>
+    </thead>
+    <tbody id="tabelaReserva"></tbody>
+  </table>
+</div>
+
+<!-- ABA EMPRÉSTIMOS -->
+<div id="abaEmprestimos" class="aba" style="display: none;">
+  <h2>Controle de Empréstimos</h2>
+  <label for="nomePessoa">Nome:</label>
+  <input type="text" id="nomePessoa">
+  <label for="valorEmprestimo">Valor:</label>
+  <input type="number" id="valorEmprestimo">
+  <label for="dataEmprestimo">Data:</label>
+  <input type="date" id="dataEmprestimo">
+  <label for="obsEmprestimo">Observação:</label>
+  <input type="text" id="obsEmprestimo">
+  <button onclick="registrarEmprestimo()">Registrar Empréstimo</button>
+
+  <h3>Lista de Empréstimos</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Valor</th>
+        <th>Data</th>
+        <th>Observação</th>
+        <th>Status</th>
+        <th>Ação</th>
+      </tr>
+    </thead>
+    <tbody id="tabelaEmprestimos"></tbody>
+  </table>
+</div>
+
+<!-- ABA IMPOSTOS -->
+<div id="abaImpostos" class="aba" style="display: none;">
+  <section>
+    <h2>Declaração de Pagamento de Impostos</h2>
+    <div class="form-imposto">
+      <label for="tipoImposto">Tipo:</label>
+      <select id="tipoImposto">
+        <option value="DAS">DAS</option>
+        <option value="IR">IR</option>
+        <option value="ISS">ISS</option>
+        <option value="Outro">Outro</option>
+      </select>
+
+      <label for="dataImposto">Data:</label>
+      <input type="date" id="dataImposto">
+
+      <label for="valorImposto">Valor:</label>
+      <input type="number" id="valorImposto">
+
+      <label for="descricaoImposto">Descrição:</label>
+      <input type="text" id="descricaoImposto">
+
+      <label for="statusImposto">Status:</label>
+      <select id="statusImposto">
+        <option value="Pendente">Pendente</option>
+        <option value="Pago">Pago</option>
+      </select>
+
+      <button onclick="registrarImposto()">Registrar Imposto</button>
+    </div>
+  </section>
+  <section>
+    <h3>Histórico de Impostos</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Data</th>
+          <th>Valor</th>
+          <th>Descrição</th>
+          <th>Status</th>
+          <th>Ação</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaImpostos"></tbody>
+    </table>
+  </section>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
