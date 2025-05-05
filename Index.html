@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Controle Financeiro</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="bancos.js"></script>
+  <script src="movimentacoes.js"></script>
+  <script src="despesas.js"></script> 
+  <script src="investimentos.js"></script>
+  <script src="emprestimos.js"></script>
+  <script src="impostos.js"></script>
+  <script src="script.js"></script>
+  <script src="resumo.js"></script>
+</head>
+<body>
+<button class="dark-toggle" onclick="alternarModo()">Modo Noturno</button>
+
+<h1>Financeiro Pessoal/Mei </h1>
+
+<!-- ATALHOS RÁPIDOS -->
+<section id="atalhosImpostos">
+  <button onclick="window.open('https://www.nfse.gov.br/EmissorNacional/Login?ReturnUrl=%2fEmissorNacional', '_blank')">NF-Eletronifca</button>
+  <button onclick="window.open('https://www.regularize.pgfn.gov.br/home', '_blank')">Regularize PGFN</button>
+  <button onclick="window.open('https://www.gov.br/pt-br', '_blank')">Portal do Governo</button>
+  <button onclick="window.open('https://www8.receita.fazenda.gov.br/SimplesNacional/aplicacoes.aspx?id=19')">Simples Nacional</button>
+</section>
+
+<!-- SALDOS -->
+<section>
+  <h2>Saldos</h2>
+  <div id="saldosContainer">
+    <div class="saldo-box">
+      <h4>Conta Principal</h4>
+      <span id="saldoContaPrincipal">R$ 0,00</span>
+    </div>
+    <div class="saldo-box">
+      <h4>Total nos Bancos</h4>
+      <span id="saldoTotal">R$ 0,00</span>
+    </div>
+  <div class="saldo-box">
+    <h4>Despesas Pendentes</h4>
+    <span id="saldoDespesasPendentes">R$ 0,00</span>
+  </div>
+  <div class="saldo-box">
+    <h4>Impostos Pendentes</h4>
+    <span id="saldoImpostosPendentes">R$ 0,00</span>
+  </div>  
+</div>
+</section>
+<!-- LEMBRETES DE DESPESAS -->
+<div id="alertaImpostos"></div>
+
+<!-- MENU DE ABAS -->
+<nav>
+  <button onclick="mostrarAba('abaBancos')">Bancos</button>
+  <button onclick="mostrarAba('abaDespesas')">Despesas Fixas/Variáveis</button>
+  <button onclick="mostrarAba('abaMovimentacoes')">Movimentações</button>
+  <button onclick="mostrarAba('abaInvestimentos')">Investimentos</button>
+  <button onclick="mostrarAba('abaImpostos')">Impostos</button>
+  <button onclick="mostrarAba('abaResumo')">Resumo Financeiro</button>
+</nav>
+
+<!-- ABA BANCOS -->
+<div id="abaBancos" class="aba">
+  <h2>Cadastrar Banco</h2>
+  <label for="bancoNome">Nome do Banco:</label>
+  <input type="text" id="bancoNome">
+  
+  <label for="saldoInicial">Saldo Inicial:</label>
+  <input type="number" id="saldoInicial">
+  
+  <label>
+    <input type="checkbox" id="principal"> Definir como conta principal
+  </label>
+  
+  <button onclick="cadastrarBanco()">Cadastrar Banco</button>
+  
+  <h3>Lista de Bancos Cadastrados</h3>
+  <table id="tabelaBancos">
+    <thead>
+      <tr>
+        <th>Nome do Banco</th>
+        <th>Saldo</th>
+        <th>Ação</th>
+      </tr>
+    </thead>
+    <tbody id="saldos">
+      <!-- Os bancos serão inseridos aqui via JavaScript -->
+    </tbody>
+  </table>
+</div>
+
+<!-- ABA MOVIMENTAÇÕES -->
+<div id="abaMovimentacoes" class="aba" style="display: none;">
+  <h2>Lançar Movimentação</h2>
+  <label for="data">Data:</label>
+  <input type="date" id="data">
+  <label for="descricao">Descrição:</label>
+  <input type="text" id="descricao">
+  <label for="valor">Valor:</label>
+  <input type="number" id="valor">
+  <label for="tipo">Tipo:</label>
+  <select id="tipo">
+    <option value="credito">Crédito</option>
+    <option value="debito">Débito</option>
+  </select>
+  <label for="bancoSelect">Banco:</label>
+  <select id="bancoSelect"></select>
+  <button onclick="lancarMovimentacao()">Lançar</button>
+
+  <h2>Histórico de Movimentações</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Descrição</th>
+        <th>Valor</th>
+        <th>Tipo</th>
+        <th>Banco</th>
+        <th>Ação</th>
+      </tr>
+    </thead>
+    <tbody id="historico"></tbody>
+  </table>
+</div>
+
+<!-- ABA DESPESAS FIXAS/VARIÁVEIS -->
+<div id="abaDespesas" class="aba" style="display: none;">
+  <form id="formDespesa">
+    <input type="date" id="dataDespesa" required>
+    <input type="text" id="descricaoDespesa" placeholder="Descrição" required>
+    <select id="categoriaDespesa" required>
+      <option value="">Categoria</option>
+      <option value="Luz">Luz</option>
+      <option value="Água">Água</option>
+      <option value="Internet">Internet</option>
+      <option value="Aluguel">Aluguel</option>
+      <option value="Mercado">Mercado</option>
+      <option value="Presente">Presente</option>
+      <option value="Viagem">Viagem</option>
+      <option value="CCredito">C.Crédito</option>
+      <option value="Outros">Outros</option>
+    </select>
+    <input type="number" id="valorDespesa" placeholder="Valor" required step="0.01" min="0">
+    <button type="submit">Cadastrar Despesa</button>
+  </form>
+
+  <h3>Lista de Despesas</h3>
+  <table id="tabelaDespesas">
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Descrição</th>
+        <th>Categoria</th>
+        <th>Valor</th>
+        <th>Status</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="tabelaDespesasBody">
+      <!-- As despesas serão inseridas aqui via JavaScript -->
+    </tbody>
+  </table>
+</div>
+
+
+  
+<!-- ABA INVESTIMENTOS -->
+<div id="abaInvestimentos" class="aba" style="display: none;">
+  <h2>Reserva Financeira</h2>
+
+  <div>
+    <label for="reservaInput">Valor Manual da Reserva:</label>
+    <input type="number" id="reservaInput">
+    <button onclick="atualizarReserva()">Salvar</button>
+  </div>
+
+  <p><strong>Reserva atual:</strong> R$ <span id="reservaValor">0,00</span></p>
+
+  <hr>
+
+  <h3>Novo Lançamento</h3>
+  <div>
+    <label for="dataReserva">Data:</label>
+    <input type="date" id="dataReserva">
+
+    <label for="descReserva">Descrição:</label>
+    <input type="text" id="descReserva">
+
+    <label for="valorReserva">Valor:</label>
+    <input type="number" id="valorReserva">
+
+    <label for="tipoReserva">Tipo:</label>
+    <select id="tipoReserva">
+      <option value="aporte">Aporte</option>
+      <option value="retirada">Retirada</option>
+    </select>
+
+    <label for="categoriaReserva">Categoria:</label>
+    <select id="categoriaReserva">
+      <option value="CDI">CDI</option>
+      <option value="CDB">CDB</option>
+      <option value="Tesouro">Tesouro</option>
+      <option value="Consórcio">Consórcio</option>
+    </select>
+
+    <button onclick="lancarReserva()">Lançar na Reserva</button>
+  </div>
+
+  <hr>
+
+  <h3>Resumo por Categoria</h3>
+  <ul id="resumoPorCategoria"></ul>
+
+  <hr>
+
+  <h3>Histórico de Lançamentos</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Descrição</th>
+        <th>Valor</th>
+        <th>Tipo</th>
+        <th>Categoria</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="tabelaReserva"></tbody>
+  </table>
+</div>
+
+<!-- ABA IMPOSTOS -->
+<div id="abaImpostos" class="aba" style="display: none;">
+  <section>
+    <h2>Declaração de Pagamento de Impostos</h2>
+    <div class="form-imposto">
+      <label for="tipoImposto">Tipo:</label>
+      <select id="tipoImposto">
+        <option value="DAS">DAS</option>
+        <option value="IR">IR</option>
+        <option value="IPVA">IPVA</option>
+        <option value="IPTU">IPTU</option>
+        <option value="Outro">Outro</option>
+      </select>
+
+      <label for="dataImposto">Data:</label>
+      <input type="date" id="dataImposto">
+
+      <label for="valorImposto">Valor:</label>
+      <input type="number" id="valorImposto">
+
+      <label for="descricaoImposto">Descrição:</label>
+      <input type="text" id="descricaoImposto">
+
+      <label for="statusImposto">Status:</label>
+      <select id="statusImposto">
+        <option value="Pendente">Pendente</option>
+        <option value="Pago">Pago</option>
+      </select>
+
+      <button onclick="registrarImposto()">Registrar Imposto</button>
+    </div>
+  </section>
+  <section>
+    <h3>Histórico de Impostos</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Data</th>
+          <th>Valor</th>
+          <th>Descrição</th>
+          <th>Status</th>
+          <th>Ação</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaImpostos"></tbody>
+    </table>
+  </section>
+</div>
+
+<!-- ABA RESUMO FINANCEIRO -->
+<div id="abaResumo" class="aba" style="display: none;">
+  <h2>Resumo Financeiro</h2>
+  
+  <div class="resumo-container">
+    <!-- Saúde Financeira -->
+    <section class="resumo-card">
+      <h3>Saúde Financeira</h3>
+      <div id="saudeFinanceira">
+        <div class="indicador">
+          <span class="indicador-titulo">Saldo Total:</span>
+          <span class="indicador-valor" id="resumoSaldoTotal">R$ 0,00</span>
+        </div>
+        <div class="indicador">
+          <span class="indicador-titulo">Despesas Pendentes:</span>
+          <span class="indicador-valor" id="resumoDespesasPendentes">R$ 0,00</span>
+        </div>
+        <div class="indicador">
+          <span class="indicador-titulo">Impostos Pendentes:</span>
+          <span class="indicador-valor" id="resumoImpostosPendentes">R$ 0,00</span>
+        </div>
+        <div class="indicador">
+          <span class="indicador-titulo">Saldo Disponível:</span>
+          <span class="indicador-valor" id="resumoSaldoDisponivel">R$ 0,00</span>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Resumo de Despesas por Categoria -->
+    <section class="resumo-card">
+      <h3>Despesas por Categoria</h3>
+      <div id="resumoDespesas">
+        <canvas id="graficoDespesas"></canvas>
+        <table id="tabelaDespesasResumo">
+          <thead>
+            <tr>
+              <th>Categoria</th>
+              <th>Total</th>
+              <th>% do Total</th>
+            </tr>
+          </thead>
+          <tbody id="corpoTabelaDespesasResumo">
+            <!-- Preenchido via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+    
+    <!-- Resumo de Investimentos -->
+    <section class="resumo-card">
+      <h3>Investimentos por Categoria</h3>
+      <div id="resumoInvestimentos">
+        <canvas id="graficoInvestimentos"></canvas>
+        <table id="tabelaInvestimentosResumo">
+          <thead>
+            <tr>
+              <th>Categoria</th>
+              <th>Total</th>
+              <th>% do Total</th>
+            </tr>
+          </thead>
+          <tbody id="corpoTabelaInvestimentosResumo">
+            <!-- Preenchido via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+
+</body>
+</html>
